@@ -40,7 +40,6 @@ def update_user_subscription(user_id, is_active):
                 cursor.execute('INSERT INTO users (user_id, is_active) VALUES (%s, %s)', (user_id, is_active))
             conn.commit()
 
-# Функция для получения погоды
 def fetch_weather():
     url = f"http://api.openweathermap.org/data/2.5/forecast?q=Almaty&appid={API_KEY}&units=metric"
     response = requests.get(url)
@@ -49,14 +48,37 @@ def fetch_weather():
         today = datetime.now().strftime('%Y-%m-%d')
         forecasts = [item for item in data['list'] if item['dt_txt'].startswith(today)]
         weather_info = "Погода на сегодня:\n"
+        
+        # Словарь соответствия погоды и эмодзи
+        weather_emojis = {
+            "Clear": "☀️",
+            "Clouds": "☁️",
+            "Rain": "🌧️",
+            "Drizzle": "🌦️",
+            "Thunderstorm": "⛈️",
+            "Snow": "❄️",
+            "Mist": "🌫️",
+            "Smoke": "💨",
+            "Haze": "🌫️",
+            "Dust": "🌪️",
+            "Fog": "🌁",
+            "Sand": "🏜️",
+            "Ash": "🌋",
+            "Squall": "🌬️",
+            "Tornado": "🌪️"
+        }
+
         for forecast in forecasts:
             time = forecast['dt_txt'].split(' ')[1][:5]
             temp = forecast['main']['temp']
             description = forecast['weather'][0]['description']
-            weather_info += f"{time} - Температура: {temp}°C, {description}\n"
+            main_weather = forecast['weather'][0]['main']
+            emoji = weather_emojis.get(main_weather, "")
+            weather_info += f"{time} - Температура: {temp}°C, {description} {emoji}\n"
         return weather_info
     else:
         return "Не удалось получить данные о погоде."
+
 
 # Функция для отправки погоды только активным пользователям
 def send_weather():
